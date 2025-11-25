@@ -5,7 +5,8 @@ const {
   getProjectById,
   createProject,
   updateProject,
-  deleteProject
+  deleteProject,
+  restoreProject
 } = require('../controllers/projectController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
@@ -29,6 +30,7 @@ const projectValidation = [
     .isLength({ min: 1, max: 50 })
     .withMessage('Field must be between 1 and 50 characters'),
   body('fileUrl')
+    .optional()
     .isURL()
     .withMessage('File URL must be a valid URL')
 ];
@@ -66,5 +68,6 @@ router.get('/:id', getProjectById);
 router.post('/', authenticateToken, requireRole('admin'), projectValidation, createProject);
 router.put('/:id', authenticateToken, requireRole('admin'), projectValidation, updateProject);
 router.delete('/:id', authenticateToken, requireRole('admin'), deleteProject);
+router.post('/:id/restore', authenticateToken, requireRole('admin'), restoreProject);
 
 module.exports = router;

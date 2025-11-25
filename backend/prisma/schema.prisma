@@ -30,6 +30,9 @@ model Project {
   uploadedBy Int
   uploader   User           @relation(fields: [uploadedBy], references: [id])
   createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  deletedAt  DateTime?      // Soft delete timestamp
+  isDeleted  Boolean        @default(false) // Soft delete flag
   savedBy    SavedProject[]
 
   @@unique([title, author])
