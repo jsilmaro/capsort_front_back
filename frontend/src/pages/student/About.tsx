@@ -1,7 +1,10 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../components/Navbar';
 import { Card, CardContent } from '../../components/ui/card';
 import { Avatar, AvatarFallback } from '../../components/ui/avatar';
+import { Loader2 } from 'lucide-react';
+import { api } from '../../services/api';
 
 const teamMembers = [
   {
@@ -24,12 +27,62 @@ const teamMembers = [
   }
 ];
 
+interface AboutContent {
+  title: string;
+  subtitle: string;
+  mission: string;
+  contactEmail: string;
+}
+
 export default function StudentAbout() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [content, setContent] = useState<AboutContent>({
+    title: 'About CapSort',
+    subtitle: 'Capstone Archiving and Sorting System',
+    mission: 'CapSort is designed to provide an efficient and user-friendly platform for archiving, organizing, and discovering capstone projects from the University of Science and Technology of Southern Philippines. Our goal is to preserve the innovative work of students and make it accessible to future generations of learners and researchers.',
+    contactEmail: 'capsort@ustp.edu.ph'
+  });
+
+  useEffect(() => {
+    fetchAboutContent();
+  }, []);
+
+  const fetchAboutContent = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get<{ content: AboutContent }>('/about');
+      
+      if (response.data?.content) {
+        setContent({
+          title: response.data.content.title,
+          subtitle: response.data.content.subtitle,
+          mission: response.data.content.mission,
+          contactEmail: response.data.content.contactEmail
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching about content:', error);
+      // Keep default content if fetch fails
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     navigate('/');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f8f8f8]">
+        <Navbar role="student" onLogout={handleLogout} />
+        <div className="container mx-auto px-8 py-12 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#1a1851]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
@@ -38,9 +91,9 @@ export default function StudentAbout() {
       <div className="container mx-auto px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="font-['Poppins'] text-[48px] text-[#1a1851] mb-4">About CapSort</h1>
+          <h1 className="font-['Poppins'] text-[48px] text-[#1a1851] mb-4">{content.title}</h1>
           <p className="font-['Poppins'] text-[20px] text-[#1e1e1e] max-w-3xl mx-auto">
-            Capstone Archiving and Sorting System
+            {content.subtitle}
           </p>
         </div>
 
@@ -49,10 +102,7 @@ export default function StudentAbout() {
           <CardContent className="p-8">
             <h2 className="font-['Poppins'] text-[32px] text-[#1a1851] mb-4">Our Mission</h2>
             <p className="font-['Poppins'] text-[18px] text-[#1e1e1e] leading-relaxed">
-              CapSort is designed to provide an efficient and user-friendly platform for archiving, 
-              organizing, and discovering capstone projects from the University of Science and Technology 
-              of Southern Philippines. Our goal is to preserve the innovative work of students and make 
-              it accessible to future generations of learners and researchers.
+              {content.mission}
             </p>
           </CardContent>
         </Card>
@@ -124,7 +174,7 @@ export default function StudentAbout() {
               Have questions or suggestions? We'd love to hear from you.
             </p>
             <p className="font-['Poppins'] text-[16px]">
-              Email: capsort@ustp.edu.ph
+              Email: {content.contactEmail}
             </p>
           </CardContent>
         </Card>
