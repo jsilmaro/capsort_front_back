@@ -40,7 +40,7 @@ async function main() {
 
   console.log('✅ Created student user:', student.email);
 
-  // Create sample projects
+  // Create sample projects (only IoT and Database)
   const sampleProjects = [
     {
       title: 'IoT Smart Home System',
@@ -59,10 +59,10 @@ async function main() {
       uploadedBy: admin.id,
     },
     {
-      title: 'Machine Learning Prediction Model',
+      title: 'IoT Environmental Monitoring System',
       author: 'Alice Brown',
       year: 2024,
-      field: 'AI/ML',
+      field: 'IoT',
       fileUrl: 'https://example.com/project3.pdf',
       uploadedBy: student.id,
     },

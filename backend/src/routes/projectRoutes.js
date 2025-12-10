@@ -23,8 +23,8 @@ const projectValidation = [
     .isLength({ min: 1, max: 100 })
     .withMessage('Author must be between 1 and 100 characters'),
   body('year')
-    .isInt({ min: 1900, max: new Date().getFullYear() + 10 })
-    .withMessage('Year must be a valid year'),
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage(`Year must be between 1900 and ${new Date().getFullYear()}`),
   body('field')
     .trim()
     .isLength({ min: 1, max: 50 })
@@ -46,8 +46,16 @@ const queryValidation = [
     .withMessage('Limit must be between 1 and 100'),
   query('year')
     .optional()
-    .isInt({ min: 1900, max: new Date().getFullYear() + 10 })
-    .withMessage('Year must be a valid year'),
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage(`Year must be between 1900 and ${new Date().getFullYear()}`),
+  query('yearFrom')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage(`Year from must be between 1900 and ${new Date().getFullYear()}`),
+  query('yearTo')
+    .optional()
+    .isInt({ min: 1900, max: new Date().getFullYear() })
+    .withMessage(`Year to must be between 1900 and ${new Date().getFullYear()}`),
   query('field')
     .optional()
     .trim()
