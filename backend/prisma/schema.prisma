@@ -14,10 +14,10 @@ model User {
   contactNumber    String
   email            String         @unique
   password         String
-  role             String         // admin, student
-  resetToken       String?        // Password reset token
-  resetTokenExpiry DateTime?      // Token expiration time
+  role             String
   createdAt        DateTime       @default(now())
+  resetToken       String?
+  resetTokenExpiry DateTime?
   projects         Project[]
   savedProjects    SavedProject[]
 }
@@ -27,26 +27,27 @@ model Project {
   title      String
   author     String
   year       Int
-  field      String         // IoT, Database, etc.
+  field      String
   fileUrl    String
   uploadedBy Int
-  uploader   User           @relation(fields: [uploadedBy], references: [id])
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
-  deletedAt  DateTime?      // Soft delete timestamp
-  isDeleted  Boolean        @default(false) // Soft delete flag
+  deletedAt  DateTime?
+  isDeleted  Boolean        @default(false)
+  uploader   User           @relation(fields: [uploadedBy], references: [id])
   savedBy    SavedProject[]
 
-  @@unique([title, author])
+  @@unique([title, author, year])
+  @@unique([title, year])
 }
 
 model SavedProject {
   id        Int      @id @default(autoincrement())
   userId    Int
   projectId Int
-  user      User     @relation(fields: [userId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
   createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, projectId])
 }
@@ -55,7 +56,7 @@ model AboutContent {
   id           Int      @id @default(autoincrement())
   title        String
   subtitle     String
-  mission      String   @db.Text
+  mission      String
   contactEmail String
   updatedAt    DateTime @updatedAt
   createdAt    DateTime @default(now())

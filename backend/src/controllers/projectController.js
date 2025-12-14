@@ -198,17 +198,72 @@ const createProject = async (req, res) => {
     }
     
     const uploadedBy = req.user.id;
+    const projectYear = parseInt(year);
+
+    // Check for existing projects before creating
+    const existingProjects = await prisma.project.findMany({
+      where: {
+        OR: [
+          // Same title, author, and year
+          {
+            title: { equals: title, mode: 'insensitive' },
+            author: { equals: author, mode: 'insensitive' },
+            year: projectYear
+          },
+          // Same title and year (different author)
+          {
+            title: { equals: title, mode: 'insensitive' },
+            year: projectYear
+          }
+        ],
+        isDeleted: false // Only check non-deleted projects
+      }
+    });
+
+    if (existingProjects.length > 0) {
+      const duplicate = existingProjects[0];
+      
+      // Check which type of duplicate it is
+      if (duplicate.title.toLowerCase() === title.toLowerCase() && 
+          duplicate.author.toLowerCase() === author.toLowerCase() && 
+          duplicate.year === projectYear) {
+        return res.status(400).json({
+          error: 'Duplicate project detected',
+          message: `A project with the title "${title}" by "${author}" in ${year} already exists`,
+          duplicateProject: {
+            id: duplicate.id,
+            title: duplicate.title,
+            author: duplicate.author,
+            year: duplicate.year
+          },
+          status: 400
+        });
+      } else if (duplicate.title.toLowerCase() === title.toLowerCase() && 
+                 duplicate.year === projectYear) {
+        return res.status(400).json({
+          error: 'Duplicate project title detected',
+          message: `A project with the title "${title}" already exists in ${year} by "${duplicate.author}"`,
+          duplicateProject: {
+            id: duplicate.id,
+            title: duplicate.title,
+            author: duplicate.author,
+            year: duplicate.year
+          },
+          status: 400
+        });
+      }
+    }
 
     // Use a default placeholder if fileUrl is not provided
     const finalFileUrl = fileUrl || 'https://placeholder.com/default.pdf';
 
-    console.log('Creating project with data:', { title, author, year, field, fileUrl: finalFileUrl, uploadedBy });
+    console.log('Creating project with data:', { title, author, year: projectYear, field, fileUrl: finalFileUrl, uploadedBy });
 
     const project = await prisma.project.create({
       data: {
         title,
         author,
-        year: parseInt(year),
+        year: projectYear,
         field,
         fileUrl: finalFileUrl,
         uploadedBy
@@ -241,10 +296,26 @@ const createProject = async (req, res) => {
     
     // Handle specific Prisma errors
     if (error.code === 'P2002') {
-      return res.status(400).json({
-        error: 'A project with this title and author already exists',
-        status: 400
-      });
+      const constraint = error.meta?.target;
+      if (constraint?.includes('title') && constraint?.includes('author') && constraint?.includes('year')) {
+        return res.status(400).json({
+          error: 'Duplicate project detected',
+          message: 'A project with this title, author, and year already exists',
+          status: 400
+        });
+      } else if (constraint?.includes('title') && constraint?.includes('year')) {
+        return res.status(400).json({
+          error: 'Duplicate project title detected',
+          message: 'A project with this title already exists in this year',
+          status: 400
+        });
+      } else {
+        return res.status(400).json({
+          error: 'Duplicate project detected',
+          message: 'A project with similar information already exists',
+          status: 400
+        });
+      }
     }
     
     res.status(500).json({
@@ -338,10 +409,26 @@ const updateProject = async (req, res) => {
     
     // Handle specific Prisma errors
     if (error.code === 'P2002') {
-      return res.status(400).json({
-        error: 'A project with this title and author already exists',
-        status: 400
-      });
+      const constraint = error.meta?.target;
+      if (constraint?.includes('title') && constraint?.includes('author') && constraint?.includes('year')) {
+        return res.status(400).json({
+          error: 'Duplicate project detected',
+          message: 'A project with this title, author, and year already exists',
+          status: 400
+        });
+      } else if (constraint?.includes('title') && constraint?.includes('year')) {
+        return res.status(400).json({
+          error: 'Duplicate project title detected',
+          message: 'A project with this title already exists in this year',
+          status: 400
+        });
+      } else {
+        return res.status(400).json({
+          error: 'Duplicate project detected',
+          message: 'A project with similar information already exists',
+          status: 400
+        });
+      }
     }
     
     res.status(500).json({

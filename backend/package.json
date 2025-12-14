@@ -24,6 +24,7 @@
     "test:admin": "node scripts/test-admin-login.js",
     "clean:projects": "node scripts/clean-projects-data.js",
     "check:db": "node scripts/check-database-state.js",
+    "check:duplicates": "node scripts/check-duplicates.js",
     "validate:env": "node scripts/validate-env.js"
   },
   "keywords": [
